@@ -41,6 +41,7 @@ public class DemoApplication {
 				return new DemoSQLConfig();
 			}
 		};
+
 		
 		// 把以下需要用到的数据库驱动取消注释即可，如果这里没有可以自己新增
 		//		try { //加载驱动程序
