@@ -10,11 +10,11 @@
 
 👌 在虚拟机中安装了clickhouse，使用xshell连接，并把本地mysql中的测试数据全部迁移到了clickhouse中
 
-![11](https://github.com/qiujunlin/APIJSONDemo/images/1.png)
+![11](https://github.com/qiujunlin/APIJSONDemo/blob/master/images/1.png)
 
 👌 使用DBeaver 连接了ClickHouse ，能方便查看数据
 
-![11](https://github.com/qiujunlin/APIJSONDemo/images/2.png)
+![11](https://github.com/qiujunlin/APIJSONDemo/blob/master/images/2.png)
 
 
 
