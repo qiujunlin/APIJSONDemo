@@ -14,6 +14,7 @@ limitations under the License.*/
 
 package apijson.demo;
 
+import apijson.Log;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -24,6 +25,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import apijson.framework.APIJSONApplication;
 import apijson.framework.APIJSONCreator;
 import apijson.orm.SQLConfig;
+
+import static apijson.framework.APIJSONSQLConfig.TAG;
 
 
 /**SpringBootApplication
@@ -41,7 +44,15 @@ public class DemoApplication {
 				return new DemoSQLConfig();
 			}
 		};
-
+		try { //加载驱动程序
+			Log.d(TAG, "尝试加载 clickhouse 驱动 <<<<<<<<<<<<<<<<<<<<< ");
+			Class.forName("ru.yandex.clickhouse.ClickHouseDriver");
+			Log.d(TAG, "成功加载 clickhouse 驱动！>>>>>>>>>>>>>>>>>>>>> ");
+		}
+		catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			Log.e(TAG, "加载 clickhouse 驱动失败，请检查 pom.xml 中 ru.yandex.clickhouse 版本是否存在以及可用 ！！！");
+		}
 		
 		// 把以下需要用到的数据库驱动取消注释即可，如果这里没有可以自己新增
 		//		try { //加载驱动程序
@@ -63,6 +74,7 @@ public class DemoApplication {
 		//			e.printStackTrace();
 		//			Log.e(TAG, "加载 Oracle 驱动失败，请检查 pom.xml 中 com.oracle.jdbc 版本是否存在以及可用 ！！！");
 		//		}
+
 
 	}
 	
