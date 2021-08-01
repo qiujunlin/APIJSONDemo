@@ -10,11 +10,11 @@
 
 👌 在虚拟机中安装了clickhouse，使用xshell连接，并把本地mysql中的测试数据全部迁移到了clickhouse中
 
-![](images/1.png)
+![11](images/1.png)
 
 👌 使用DBeaver 连接了ClickHouse ，能方便查看数据
 
-![](images/2.png)
+![11](images/2.png)
 
 
 
