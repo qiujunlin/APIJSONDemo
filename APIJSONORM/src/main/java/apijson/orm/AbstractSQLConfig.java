@@ -511,7 +511,14 @@ public abstract class AbstractSQLConfig implements SQLConfig {
 
 	@Override
 	public String getQuote() {
-		return isMySQL() ? "`" : "\"";
+		return isMySQL() ? "`" : ( isClickHouse()? "" : "\"");
+	}
+	@Override
+	public boolean isClickHouse() {
+		return isClickHouse(getSQLDatabase());
+	}
+	public static boolean isClickHouse(String db) {
+		return DATABASE_CLICKHOUSE.equals(db);
 	}
 
 	@Override
@@ -1204,7 +1211,18 @@ public abstract class AbstractSQLConfig implements SQLConfig {
 									+ " 中 function 必须符合小写英文单词的 SQL 函数名格式！且必须是后端允许调用的 SQL 函数!");
 						}
 					}
-
+					HashMap<String,String>  map = new HashMap<>();
+					map.put("year","toYear");
+					map.put("month","toMonth");
+					map.put("houer","toHour");
+					map.put("year", "today");
+					map.put("minute","toMinute");
+					map.put("second", "toSecond");
+					String datefunction = expression.substring(0,start);
+					if(map.containsKey(datefunction)){
+						keys[i].replace(datefunction,map.get(datefunction));
+					}
+					System.out.println("ahha");
 				}
 
 				boolean isColumn = start < 0;
@@ -2158,6 +2176,10 @@ public abstract class AbstractSQLConfig implements SQLConfig {
 		if (isOracle()) {
 			return "regexp_like(" + getKey(key) + ", " + getValue(value) + (ignoreCase ? ", 'i'" : ", 'c'") + ")";
 		}
+		if (isClickHouse()) {
+			return "match(" + (ignoreCase ? "lower(" : "") + getKey(key) + (ignoreCase ? ")" : "") + ", " + (ignoreCase ? "lower(" : "") + getValue(value) + (ignoreCase ? ")" : "") + ")";
+		}
+
 		return getKey(key) + " REGEXP " + (ignoreCase ? "" : "BINARY ") + getValue(value);
 	}
 	//~ regexp >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -2448,7 +2470,13 @@ public abstract class AbstractSQLConfig implements SQLConfig {
 					else {
 						boolean isNum = c instanceof Number;
 						String v = (isNum ? "" : "\"") + childs[i] + (isNum ? "" : "\"");
-						condition += ("json_contains(" + getKey(key) + ", " +  getValue(v) + ")");
+						//condition += ("json_contains(" + getKey(key) + ", " +  getValue(v) + ")");
+						if (isClickHouse()) {
+							condition += condition + "has(JSONExtractArrayRaw(assumeNotNull(" + getKey(key) + "))" + ", " + getValue(v) + ")";
+						}
+						else {
+							condition += ("json_contains(" + getKey(key) + ", " +  getValue(v) + ")");
+						}
 					}
 				}
 			}
@@ -2649,9 +2677,9 @@ public abstract class AbstractSQLConfig implements SQLConfig {
 		case POST:
 			return "INSERT INTO " + tablePath + config.getColumnString() + " VALUES" + config.getValuesString();
 		case PUT:
-			return "UPDATE " + tablePath + config.getSetString() + config.getWhereString(true) + (config.isMySQL() ? config.getLimitString() : "");
+			return "UPDATE " + tablePath + config.getSetString() + config.getWhereString(true) + (config.isMySQL()||config.isClickHouse() ? config.getLimitString() : "");
 		case DELETE:
-			return "DELETE FROM " + tablePath + config.getWhereString(true) + (config.isMySQL() ? config.getLimitString() : "");  // PostgreSQL 不允许 LIMIT
+			return "DELETE FROM " + tablePath + config.getWhereString(true) + (config.isMySQL()||config.isClickHouse() ? config.getLimitString() : "");  // PostgreSQL 不允许 LIMIT
 		default:
 			String explain = (config.isExplain() ? (config.isSQLServer() || config.isOracle() ? "SET STATISTICS PROFILE ON  " : "EXPLAIN ") : "");
 			if (config.isTest() && RequestMethod.isGetMethod(config.getMethod(), true)) {

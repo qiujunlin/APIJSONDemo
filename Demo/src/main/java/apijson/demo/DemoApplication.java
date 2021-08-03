@@ -100,6 +100,5 @@ public class DemoApplication {
 		};
 	}
 
-	// 支持 APIAuto 中 JavaScript 代码跨域请求 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 }

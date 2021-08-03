@@ -8,7 +8,7 @@
 
 **已经完成内容：**
 
-👌 在虚拟机中安装了clickhouse，使用xshell连接，并把本地mysql中的测试数据全部迁移到了clickhouse中
+👌 在虚拟机中安装ubuntu,并安装clickhouse，使用xshell连接，并把本地mysql中的测试数据全部迁移到了clickhouse中
 
 ![11](images/1.png)
 
