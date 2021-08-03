@@ -4,8 +4,6 @@
 
 📙 clickhouse官方文档：[点击](https://clickhouse.tech/docs/zh/sql-reference/syntax/)
 
-
-
 **已经完成内容：**
 
 👌 在虚拟机中安装ubuntu,并安装clickhouse，使用xshell连接，并把本地mysql中的测试数据全部迁移到了clickhouse中
@@ -26,13 +24,25 @@
 
 
 
+### **测试过程：**
 
+#### 1.测试json支持
 
-**待完成内容：**
+clickhosue对jjson的支持情况：导入json数据类型变为了string类型  。对json的支持不太友好 
 
-测试
+| json_contains 函数 |      |      |
+| ------------------ | ---- | ---- |
+|                    |      |      |
+|                    |      |      |
+|                    |      |      |
 
+#### 2.测试 日期函数的支持
 
+对日期函数的支持也不太友好。
+
+见issue1。
+
+ 
 
 **遇见的bug：**
 
