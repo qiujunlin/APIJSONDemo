@@ -17,6 +17,11 @@ public class MySQLDemo {
     static final String USER = "root";
     static final String PASS = "123456";
 
+    public static void main1(String[] args) {
+        String s = "\"1\"";
+        System.out.println(s.length());
+        System.out.println(s.startsWith("\""));
+    }
     public static void main(String[] args) {
         Connection conn = null;
         Statement stmt = null;

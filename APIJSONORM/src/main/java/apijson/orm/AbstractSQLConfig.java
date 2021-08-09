@@ -511,7 +511,11 @@ public abstract class AbstractSQLConfig implements SQLConfig {
 
 	@Override
 	public String getQuote() {
-		return isMySQL() ? "`" : ( isClickHouse()? "" : "\"");
+		//return  isMySQL()?"`":"\"";
+		return isMySQL()||isClickHouse() ? "`" : "\"";
+		//return isMySQL() ? "`" : ( isClickHouse()? "" : "\"");
+	//	return isMySQL() ? "`" : ( isClickHouse()? "" : "\"");
+		//return isMySQL() ? "`" : ( isClickHouse()? "`" : "\"");
 	}
 	@Override
 	public boolean isClickHouse() {

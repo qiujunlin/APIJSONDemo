@@ -46,7 +46,8 @@ public class DemoApplication {
 		};
 		try { //加载驱动程序
 			Log.d(TAG, "尝试加载 clickhouse 驱动 <<<<<<<<<<<<<<<<<<<<< ");
-			Class.forName("ru.yandex.clickhouse.ClickHouseDriver");
+		//	Class.forName("ru.yandex.clickhouse.ClickHouseDriver");
+			Class.forName("cc.blynk.clickhouse.ClickHouseDriver");
 			Log.d(TAG, "成功加载 clickhouse 驱动！>>>>>>>>>>>>>>>>>>>>> ");
 		}
 		catch (ClassNotFoundException e) {

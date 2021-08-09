@@ -26,12 +26,12 @@
             <artifactId>apijson-framework</artifactId>
             <version>4.7.0</version>
         </dependency>
-        <!-- 需要用的数据库 JDBC 驱动 -->
-<!--        <dependency>-->
-<!--            <groupId>mysql</groupId>-->
-<!--            <artifactId>mysql-connector-java</artifactId>-->
-<!--            <version>8.0.22</version>-->
-<!--        </dependency>-->
+<!--        &lt;!&ndash; 需要用的数据库 JDBC 驱动 &ndash;&gt;-->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.22</version>
+        </dependency>
 <!--        <dependency>-->
 <!--            <groupId>org.postgresql</groupId>-->
 <!--            <artifactId>postgresql</artifactId>-->
@@ -39,37 +39,71 @@
 <!--        </dependency>-->
         <!-- Oracle, SQLServer 等其它数据库的 JDBC 驱动，可以在这里加上 Maven 依赖或 libs 目录放 Jar 包并依赖 -->
 
-        <dependency>
-            <groupId>ru.yandex.clickhouse</groupId>
-            <artifactId>clickhouse-jdbc</artifactId>
-            <version>0.3.1</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-databind</artifactId>
-                </exclusion>
+<!--        <dependency>-->
+<!--            <groupId>ru.yandex.clickhouse</groupId>-->
+<!--            <artifactId>clickhouse-jdbc</artifactId>-->
+<!--            <version>0.3.1</version>-->
 
-            </exclusions>
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>ru.yandex.clickhouse</groupId>-->
+<!--            <artifactId>clickhouse-jdbc</artifactId>-->
+<!--            <version>0.3.1-patch</version>-->
+<!--            <exclusions>-->
+<!--                            <exclusion>-->
+<!--                                <groupId>com.fasterxml.jackson.core</groupId>-->
+<!--                                <artifactId>jackson-core</artifactId>-->
+<!--                            </exclusion>-->
+<!--                            <exclusion>-->
+<!--                                <groupId>com.fasterxml.jackson.core</groupId>-->
+<!--                                <artifactId>jackson-databind</artifactId>-->
+<!--                            </exclusion>-->
+
+<!--            </exclusions>-->
+<!--        </dependency>-->
+        <dependency>
+            <groupId>cc.blynk.clickhouse</groupId>
+            <artifactId>clickhouse4j</artifactId>
+            <version>1.4.4</version>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.github.housepower</groupId>-->
+<!--            <artifactId>clickhouse-native-jdbc</artifactId>-->
+<!--            <version>1.6-stable</version>-->
+<!--        </dependency>-->
+        <!-- https://mvnrepository.com/artifact/ru.yandex.clickhouse/clickhouse-jdbc -->
+<!--        <dependency>-->
+<!--            <groupId>ru.yandex.clickhouse</groupId>-->
+<!--            <artifactId>clickhouse-jdbc</artifactId>-->
+<!--            <version>0.2.4</version>-->
+<!--        </dependency>-->
+
         <!-- 需要用的 SpringBoot 框架，1.4.0 以上 -->
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.boot</groupId>-->
+<!--            <artifactId>spring-boot-starter-web</artifactId>-->
+<!--            <version>2.4.2</version>-->
+<!--            <exclusions>-->
+<!--                <exclusion>-->
+<!--                    <groupId>com.fasterxml.jackson.core</groupId>-->
+<!--                    <artifactId>jackson-core</artifactId>-->
+<!--                </exclusion>-->
+<!--                <exclusion>-->
+<!--                    <groupId>com.fasterxml.jackson.core</groupId>-->
+<!--                    <artifactId>jackson-databind</artifactId>-->
+<!--                </exclusion>-->
+
+<!--            </exclusions>-->
+
+<!--        </dependency>-->
+
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
             <version>2.4.2</version>
         </dependency>
-        <dependency>
 
-            <groupId>mysql</groupId>
-
-            <artifactId>mysql-connector-java</artifactId>
-
-            <version>5.1.25</version>
-
-        </dependency>
 
     </dependencies>
 
