@@ -39,12 +39,9 @@ SQL_FUNCTION_MAP.put("json_objectagg", "");  // JSON_OBJECTAGG(key, val))  将�
 
 ```
 select name  from system.functions where name like '%JSON%'
-
 ```
 
 查询结果，结果发现，几乎所有的mysql里的json函数  clickhouse都不支持。
-
- 
 
 ```
 ─name────────────────────────┐
@@ -72,10 +69,6 @@ select name  from system.functions where name like '%JSON%'
 │ simpleJSONExtractRaw        │
 │ simpleJSONExtractString 
 ```
-
-
-
-
 
 
 

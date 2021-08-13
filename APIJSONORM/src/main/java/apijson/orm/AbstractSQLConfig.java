@@ -1216,12 +1216,6 @@ public abstract class AbstractSQLConfig implements SQLConfig {
 						}
 					}
 					HashMap<String,String>  map = new HashMap<>();
-					map.put("year","toYear");
-					map.put("month","toMonth");
-					map.put("houer","toHour");
-					map.put("year", "today");
-					map.put("minute","toMinute");
-					map.put("second", "toSecond");
 					String datefunction = expression.substring(0,start);
 					if(map.containsKey(datefunction)){
 						keys[i].replace(datefunction,map.get(datefunction));
