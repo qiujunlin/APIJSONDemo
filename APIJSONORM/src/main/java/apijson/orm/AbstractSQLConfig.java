@@ -305,6 +305,80 @@ public abstract class AbstractSQLConfig implements SQLConfig {
 		SQL_FUNCTION_MAP.put("nullif", "");  // NULLIF(expr1, expr2)	比较两个字符串，如果字符串 expr1 与 expr2 相等 返回 NULL，否则返回 expr1	
 		SQL_FUNCTION_MAP.put("group_concat", "");  // GROUP_CONCAT([DISTINCT], s1, s2...)	
 
+
+        //clickhouse
+		SQL_FUNCTION_MAP.put("empty", "");  // empty(s) 对于空字符串s返回1，对于非空字符串返回0
+		SQL_FUNCTION_MAP.put("notEmpty", "");  //notEmpty(s) 对于空字符串返回0，对于非空字符串返回1。
+		SQL_FUNCTION_MAP.put("lengthUTF8", "");  //假定字符串以UTF-8编码组成的文本，返回此字符串的Unicode字符长度。如果传入的字符串不是UTF-8编码，则函数可能返回一个预期外的值
+		SQL_FUNCTION_MAP.put("lcase", ""); //将字符串中的ASCII转换为小写
+		SQL_FUNCTION_MAP.put("ucase", ""); //将字符串中的ASCII转换为大写。
+		SQL_FUNCTION_MAP.put("lowerUTF8", "");  //将字符串转换为小写，函数假设字符串是以UTF-8编码文本的字符集。
+		SQL_FUNCTION_MAP.put("upperUTF8", "");  //将字符串转换为大写，函数假设字符串是以UTF-8编码文本的字符集。
+		SQL_FUNCTION_MAP.put("isValidUTF8", ""); // 检查字符串是否为有效的UTF-8编码，是则返回1，否则返回0。
+		SQL_FUNCTION_MAP.put("toValidUTF8", "");//用�（U+FFFD）字符替换无效的UTF-8字符。所有连续的无效字符都会被替换为一个替换字符。
+		SQL_FUNCTION_MAP.put("concatAssumeInjective", "");  // concatAssumeInjective(s1, s2, …) 与concat相同，区别在于，你需要保证concat(s1, s2, s3) -> s4是单射的，它将用于GROUP BY的优化。
+		SQL_FUNCTION_MAP.put("substringUTF8", "");  // substringUTF8(s,offset,length)¶ 与’substring’相同，但其操作单位为Unicode字符，函数假设字符串是以UTF-8进行编码的文本。如果不是则可能返回一个预期外的结果（不会抛出异常）。
+		SQL_FUNCTION_MAP.put("appendTrailingCharIfAbsent", ""); // appendTrailingCharIfAbsent(s,c) 如果’s’字符串非空并且末尾不包含’c’字符，则将’c’字符附加到末尾
+		SQL_FUNCTION_MAP.put("convertCharset", ""); // convertCharset(s,from,to) 返回从’from’中的编码转换为’to’中的编码的字符串’s’。
+		SQL_FUNCTION_MAP.put("base64Encode", ""); // base64Encode(s) 将字符串’s’编码成base64
+		SQL_FUNCTION_MAP.put("base64Decode", ""); //base64Decode(s)  使用base64将字符串解码成原始字符串。如果失败则抛出异常。
+		SQL_FUNCTION_MAP.put("tryBase64Decode", ""); //tryBase64Decode(s) 使用base64将字符串解码成原始字符串。但如果出现错误，将返回空字符串。
+		SQL_FUNCTION_MAP.put("endsWith", ""); //endsWith(s,后缀) 返回是否以指定的后缀结尾。如果字符串以指定的后缀结束，则返回1，否则返回0。
+		SQL_FUNCTION_MAP.put("startsWith", ""); //startsWith（s，前缀) 返回是否以指定的前缀开头。如果字符串以指定的前缀开头，则返回1，否则返回0。
+		SQL_FUNCTION_MAP.put("trimLeft", ""); //trimLeft(s)返回一个字符串，用于删除左侧的空白字符。
+		SQL_FUNCTION_MAP.put("trimRight", ""); //trimRight(s) 返回一个字符串，用于删除右侧的空白字符。
+		SQL_FUNCTION_MAP.put("trimBoth", ""); //trimBoth(s)，用于删除任一侧的空白字符
+		SQL_FUNCTION_MAP.put("splitByChar", ""); //splitByChar（分隔符，s)  将字符串以’separator’拆分成多个子串。’separator’必须为仅包含一个字符的字符串常量。
+		SQL_FUNCTION_MAP.put("splitByString", "");  //  splitByString(分隔符，s) 与上面相同，但它使用多个字符的字符串作为分隔符。 该字符串必须为非空。
+		SQL_FUNCTION_MAP.put("arrayStringConcat", ""); //arrayStringConcat(arr[,分隔符])使用separator将数组中列出的字符串拼接起来。’separator’是一个可选参数：一个常量字符串，默认情况下设置为空字符串。
+		SQL_FUNCTION_MAP.put("alphaTokens", "");  //alphaTokens(s) 从范围a-z和A-Z中选择连续字节的子字符串。返回子字符串数组。
+		SQL_FUNCTION_MAP.put("splitByRegexp", ""); //splitByRegexp(regexp, s)  将字符串分割为由正则表达式分隔的子字符串。它使用正则表达式字符串regexp作为分隔符。
+		SQL_FUNCTION_MAP.put("splitByWhitespace", ""); //splitByWhitespace(s) 将字符串分割为由空格字符分隔的子字符串。返回选定子字符串的数组
+		SQL_FUNCTION_MAP.put("splitByNonAlpha", ""); //splitByNonAlpha(s) 将字符串分割为由空格和标点字符分隔的子字符串
+		SQL_FUNCTION_MAP.put("extractAllGroups", ""); //extractAllGroups(text, regexp) 从正则表达式匹配的非重叠子字符串中提取所有组
+		SQL_FUNCTION_MAP.put("leftPad", "");  //leftPad('string', 'length'[, 'pad_string']) 用空格或指定的字符串从左边填充当前字符串(如果需要，可以多次)，直到得到的字符串达到给定的长度
+		SQL_FUNCTION_MAP.put("leftPadUTF8", ""); //leftPadUTF8('string','length'[, 'pad_string']) 用空格或指定的字符串从左边填充当前字符串(如果需要，可以多次)，直到得到的字符串达到给定的长度
+		SQL_FUNCTION_MAP.put("rightPad", ""); // rightPad('string', 'length'[, 'pad_string']) 用空格或指定的字符串(如果需要，可以多次)从右边填充当前字符串，直到得到的字符串达到给定的长度
+		SQL_FUNCTION_MAP.put("rightPadUTF8", "");// rightPadUTF8('string','length'[, 'pad_string'])  用空格或指定的字符串(如果需要，可以多次)从右边填充当前字符串，直到得到的字符串达到给定的长度。
+		SQL_FUNCTION_MAP.put("CRC32", ""); // 使用CRC-32-IEEE 802.3多项式和初始值0xffffffff (zlib实现)返回字符串的CRC32校验和
+		SQL_FUNCTION_MAP.put("CRC32IEEE", ""); // 使用CRC-32-IEEE 802.3多项式返回字符串的CRC32校验和
+		SQL_FUNCTION_MAP.put("CRC64", ""); // 使用CRC-64-ECMA多项式返回字符串的CRC64校验和
+		SQL_FUNCTION_MAP.put("normalizeQuery", ""); //normalizeQuery(x)  用占位符替换文字、文字序列和复杂的别名。
+		SQL_FUNCTION_MAP.put("normalizedQueryHash", ""); //normalizedQueryHash(x) 为类似查询返回相同的64位散列值，但不包含文字值。有助于对查询日志进行分析
+		SQL_FUNCTION_MAP.put("encodeXMLComponent", ""); //encodeXMLComponent(x) 转义字符以将字符串放入XML文本节点或属性中
+		SQL_FUNCTION_MAP.put("decodeXMLComponent", ""); // 用字符替换XML预定义的实体
+		SQL_FUNCTION_MAP.put("extractTextFromHTML", "");  //extractTextFromHTML(X) 从HTML或XHTML中提取文本的函数
+		SQL_FUNCTION_MAP.put("positionCaseInsensitive", ""); //positionCaseInsensitive(s, needle[, start_pos])与position相同，返回在字符串中找到的子字符串的位置(以字节为单位)，从1开始。使用该函数进行不区分大小写的搜索。
+		SQL_FUNCTION_MAP.put("positionUTF8", ""); // positionUTF8(s, needle[, start_pos]) 返回在字符串中找到的子字符串的位置(以Unicode点表示)，从1开始。
+		SQL_FUNCTION_MAP.put("positionCaseInsensitiveUTF8", "");//positionCaseInsensitiveUTF8(s, needle[, start_pos]) 与positionUTF8相同，但不区分大小写。返回在字符串中找到的子字符串的位置(以Unicode点表示)，从1开始
+		SQL_FUNCTION_MAP.put("multiSearchAllPositions", ""); // 与position相同，但返回字符串中找到的相应子字符串的位置数组(以字节为单位)。位置从1开始索引。
+		SQL_FUNCTION_MAP.put("multiSearchAllPositionsUTF8", "");  //See multiSearchAllPositions.
+		SQL_FUNCTION_MAP.put("multiSearchFirstPosition", ""); // multiSearchFirstPosition(s, [needle1, needle2, …, needlen])
+		SQL_FUNCTION_MAP.put("multiSearchFirstIndex", ""); //multiSearchFirstIndex(s, [needle1, needle2, …, needlen]) 返回字符串s中最左边的needlei的索引i(从1开始)，否则返回0
+		SQL_FUNCTION_MAP.put("multiSearchAny", ""); // multiSearchAny(s, [needle1, needle2, …, needlen])如果至少有一个字符串needlei匹配字符串s，则返回1，否则返回0。
+		SQL_FUNCTION_MAP.put("match", ""); //match(s, pattern) 检查字符串是否与模式正则表达式匹配。re2正则表达式。re2正则表达式的语法比Perl正则表达式的语法更有局限性。
+		SQL_FUNCTION_MAP.put("multiMatchAny", "");  //multiMatchAny(s, [pattern1, pattern2, …, patternn]) 与match相同，但是如果没有匹配的正则表达式返回0，如果有匹配的模式返回1
+		SQL_FUNCTION_MAP.put("multiMatchAnyIndex", ""); //multiMatchAnyIndex(s, [pattern1, pattern2, …, patternn]) 与multiMatchAny相同，但返回与干堆匹配的任何索引
+		SQL_FUNCTION_MAP.put("multiMatchAllIndices", ""); //multiMatchAllIndices(s, [pattern1, pattern2, …, patternn])  与multiMatchAny相同，但返回以任意顺序匹配干堆的所有索引的数组。
+		SQL_FUNCTION_MAP.put("multiFuzzyMatchAny", ""); //multiFuzzyMatchAny(s, distance, [pattern1, pattern2, …, patternn])与multimchany相同，但如果在固定的编辑距离内有匹配的模式则返回1
+		SQL_FUNCTION_MAP.put("multiFuzzyMatchAnyIndex", ""); //multiFuzzyMatchAnyIndex(s, distance, [pattern1, pattern2, …, patternn])与multiFuzzyMatchAny相同，但返回在固定编辑距离内匹配干草堆的任何索引。
+		SQL_FUNCTION_MAP.put("multiFuzzyMatchAllIndices", ""); //  multiFuzzyMatchAllIndices(s, distance, [pattern1, pattern2, …, patternn])
+		SQL_FUNCTION_MAP.put("extract", ""); //  extract(s, pattern)  使用正则表达式提取字符串的片段
+		SQL_FUNCTION_MAP.put("extractAll", ""); //extractAll(s, pattern) 使用正则表达式提取字符串的所有片段
+		SQL_FUNCTION_MAP.put("extractAllGroupsHorizontal", ""); //extractAllGroupsHorizontal(s, pattern)使用模式正则表达式匹配s字符串的所有组
+		SQL_FUNCTION_MAP.put("extractAllGroupsVertical", ""); //extractAllGroupsVertical(s, pattern) 使用模式正则表达式匹配s字符串的所有组
+		SQL_FUNCTION_MAP.put("like", ""); //like(s, pattern) 检查字符串是否与简单正则表达式匹配
+		SQL_FUNCTION_MAP.put("notLike", "");// 和‘like’是一样的，但是是否定的
+		SQL_FUNCTION_MAP.put("countSubstrings", ""); //countSubstrings(s, needle[, start_pos])返回子字符串出现的次数
+		SQL_FUNCTION_MAP.put("countSubstringsCaseInsensitive", "");//countSubstringsCaseInsensitive(s, needle[, start_pos])返回不区分大小写的子字符串出现次数。
+		SQL_FUNCTION_MAP.put("countMatches", ""); //返回干s中的正则表达式匹配数。countMatches(s, pattern)
+		SQL_FUNCTION_MAP.put("replaceOne", ""); //replaceOne(s, pattern, replacement)将' s '中的' pattern '子串的第一个出现替换为' replacement '子串。
+
+		SQL_FUNCTION_MAP.put("replaceAll", ""); //replaceAll(s, pattern, replacement)/用' replacement '子串替换' s '中所有出现的' pattern '子串
+		SQL_FUNCTION_MAP.put("replaceRegexpOne", ""); //replaceRegexpOne(s, pattern, replacement)使用' pattern '正则表达式进行替换
+		SQL_FUNCTION_MAP.put("replaceRegexpAll", ""); //replaceRegexpAll(s, pattern, replacement)
+		SQL_FUNCTION_MAP.put("regexpQuoteMeta", ""); //regexpQuoteMeta(s)该函数在字符串中某些预定义字符之前添加一个反斜杠
+
 	}
 
 
