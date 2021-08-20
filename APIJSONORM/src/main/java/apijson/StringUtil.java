@@ -411,7 +411,9 @@ public class StringUtil {
 			return false;
 		}
 		
-		return s.length() <= 1 ? true : PATTERN_NAME.matcher(s.substring(1)).matches();
+		boolean res  =  s.length() <= 1 ? true : PATTERN_NAME.matcher(s.substring(1)).matches();
+
+		return  res;
 	}
 	/**判断是否为首字母大写的代码名称
 	 * @param s

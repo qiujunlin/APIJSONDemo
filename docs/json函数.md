@@ -80,3 +80,28 @@ select JSONLength(`praiseUserIdList`) from `test`.`Moment` limit 10;
 
 ```
 
+```
+SQL_FUNCTION_MAP.put("visitParamHas", ""); //visitParamHas(params, name)检查是否存在«name»名称的字段
+SQL_FUNCTION_MAP.put("visitParamExtractUInt", ""); //visitParamExtractUInt(params, name)将名为«name»的字段的值解析成UInt64。
+SQL_FUNCTION_MAP.put("visitParamExtractInt", ""); //与visitParamExtractUInt相同，但返回Int64。
+SQL_FUNCTION_MAP.put("visitParamExtractFloat", ""); //与visitParamExtractUInt相同，但返回Float64。
+SQL_FUNCTION_MAP.put("visitParamExtractBool", "");//解析true/false值。其结果是UInt8类型的。
+SQL_FUNCTION_MAP.put("visitParamExtractRaw", ""); //返回字段的值，包含空格符。
+SQL_FUNCTION_MAP.put("visitParamExtractString", ""); //使用双引号解析字符串。这个值没有进行转义。如果转义失败，它将返回一个空白字符串。
+SQL_FUNCTION_MAP.put("JSONHas", ""); //如果JSON中存在该值，则返回1。
+SQL_FUNCTION_MAP.put("JSONLength", ""); //返回JSON数组或JSON对象的长度。
+SQL_FUNCTION_MAP.put("JSONType", ""); //返回JSON值的类型。
+SQL_FUNCTION_MAP.put("JSONExtractUInt", ""); //解析JSON并提取值。这些函数类似于visitParam*函数。
+SQL_FUNCTION_MAP.put("JSONExtractInt", ""); //
+SQL_FUNCTION_MAP.put("JSONExtractFloat", ""); //
+SQL_FUNCTION_MAP.put("JSONExtractBool", ""); //
+SQL_FUNCTION_MAP.put("JSONExtractString", ""); //解析JSON并提取字符串。此函数类似于visitParamExtractString函数。
+SQL_FUNCTION_MAP.put("JSONExtract", "");//解析JSON并提取给定ClickHouse数据类型的值。
+SQL_FUNCTION_MAP.put("JSONExtractKeysAndValues", ""); //从JSON中解析键值对，其中值是给定的ClickHouse数据类型
+SQL_FUNCTION_MAP.put("JSONExtractRaw", ""); //返回JSON的部分。
+SQL_FUNCTION_MAP.put("toJSONString", ""); //将值序列化为其JSON表示形式。
+SQL_FUNCTION_MAP.put("abs", ""); //
+SQL_FUNCTION_MAP.put("abs", ""); //
+SQL_FUNCTION_MAP.put("abs", ""); //
+```
+
