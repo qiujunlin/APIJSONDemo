@@ -3,12 +3,11 @@
 This source code is licensed under the Apache License Version 2.0.*/
 
 
-package apijson;
+package apijson.functionAnalysis;
 
 import java.io.File;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 /**通用字符串(String)相关类,为null时返回""
@@ -448,7 +447,7 @@ public class StringUtil {
 		}
 		number = getString(number);
 		if (number.length() == 15) {
-			Log.i(TAG, "isIDCard number.length() == 15 old IDCard");
+		//	Log.i(TAG, "isIDCard number.length() == 15 old IDCard");
 			currentString = number;
 			return true;
 		}
@@ -580,7 +579,7 @@ public class StringUtil {
 	 * @return
 	 */
 	public static String getCorrectUrl(String url) {
-		Log.i(TAG, "getCorrectUrl : \n" + url);
+	//	Log.i(TAG, "getCorrectUrl : \n" + url);
 		if (isNotEmpty(url, true) == false) {
 			return "";
 		}
@@ -672,7 +671,7 @@ public class StringUtil {
 		correctPrice = correctPriceBuilder.toString();
 		//单独写到getCorrectPrice? >>>>>>>>>>>>>>>>>>>>>>
 
-		Log.i(TAG, "getPrice  <<<<<<<<<<<<<<<<<< correctPrice =  " + correctPrice);
+	//	Log.i(TAG, "getPrice  <<<<<<<<<<<<<<<<<< correctPrice =  " + correctPrice);
 		if (correctPrice.contains(".")) {
 			//			if (correctPrice.startsWith(".")) {
 			//				correctPrice = 0 + correctPrice;
@@ -682,7 +681,7 @@ public class StringUtil {
 			}
 		}
 
-		Log.i(TAG, "getPrice correctPrice =  " + correctPrice + " >>>>>>>>>>>>>>>>");
+	//	Log.i(TAG, "getPrice correctPrice =  " + correctPrice + " >>>>>>>>>>>>>>>>");
 		return isNotEmpty(correctPrice, true) ? getPrice(new BigDecimal(0 + correctPrice), formatType) : getPrice(0, formatType);
 	}
 	/**获取价格，保留两位小数
@@ -878,11 +877,11 @@ public class StringUtil {
 		return left + split + right;
 	}
 
-	/** 数组拼接
+    /** 数组拼接
 	 * @param arr
-	 * @param s
-	 * @return
-	 */
+     * @param s
+     * @return
+     */
 	public static String join(String[] arr, String s) {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (int i = 0; i < arr.length; i++) {
@@ -894,40 +893,16 @@ public class StringUtil {
 		return  stringBuilder.toString();
 	}
 
-	/**
-	 * 将函数中的参数分割  cast（now（） as date）；cast（‘2021-2-20’ as date）
-	 * @param origin
-	 * @return
-	 */
-	public static String[] getParams(String origin) {
-		ArrayList<String> arrayList = new ArrayList<>();
-		int k = 0;
-		char c = ' ';
-		while (k < origin.length()) {
-			if ((c = origin.charAt(k)) != ' ') {
-				if (c == '\'') {
-					int l = k + 1;
-					while (l < origin.length() && origin.charAt(l) != '\'') {
-						l++;
-					}
-					arrayList.add(origin.substring(k, l + 1));
-					k = l + 1;
-				} else {
-					int l = k + 1;
-					while (l < origin.length() && origin.charAt(l) != ' ') {
-						l++;
-					}
-					arrayList.add(origin.substring(k, l));
-					k = l + 1;
-				}
-			} else {
-				k++;
-			}
+	public static String getQuoteColumn(String origin, String s) {
+		return  s+origin+s;
+	}
 
+	public static int getAlians(int j, String s) {
+		int  k  =  j+1;
+		while (k<s.length()&&Character.isLetter(s.charAt(k))){
+			k++;
 		}
-		return arrayList.toArray(new String[arrayList.size()]);
-
-
+		return  k;
 	}
 
 	//校正（自动补全等）字符串>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>

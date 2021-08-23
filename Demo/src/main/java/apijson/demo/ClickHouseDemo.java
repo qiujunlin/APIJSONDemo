@@ -29,10 +29,12 @@ public class ClickHouseDemo {
             // exeSql(sqlDB);
             //exeSql(sqlTab);qiujunlin
            // exeSql(a);
-            exeSql(sql);
-            exeSql(b);
+            String sql2 = "SELECT splitByChar('i',`content`) FROM `test`.`Comment` LIMIT 10";
+            sql2 = "SELECT lcase(F%DSFS),concat(`name`,`head`) FROM `test`.`apijson_user` LIMIT 10";
+//            exeSql(sql);
+//            exeSql(b);
          //   exeSql(select);
-            exeSql(test1);
+            exeSql(sql2);
         }
 
         public static void exeSql(String sql){
@@ -41,8 +43,8 @@ public class ClickHouseDemo {
             Statement statement = null;
             ResultSet results = null;
             try {
-                //Class.forName("ru.yandex.clickhouse.ClickHouseDriver");
-                Class.forName("cc.blynk.clickhouse.ClickHouseDriver");
+                Class.forName("ru.yandex.clickhouse.ClickHouseDriver");
+//                Class.forName("cc.blynk.clickhouse.ClickHouseDriver");
                 connection = DriverManager.getConnection(address,"default","123456");
                 statement = connection.createStatement();
                 long begin = System.currentTimeMillis();

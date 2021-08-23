@@ -95,7 +95,7 @@ public abstract class AbstractSQLConfig implements SQLConfig {
 	public static final Map<String, String> RAW_MAP;
 	static {  // 凡是 SQL 边界符、分隔符、注释符 都不允许，例如 ' " ` ( ) ; # -- ，以免拼接 SQL 时被注入意外可执行指令
 		PATTERN_RANGE = Pattern.compile("^[0-9%,!=\\<\\>/\\.\\+\\-\\*\\^]+$"); // ^[a-zA-Z0-9_*%!=<>(),"]+$ 导致 exists(select*from(Comment)) 通过！
-		PATTERN_FUNCTION = Pattern.compile("^[A-Za-z0-9%,:_@&~!=\\<\\>\\|\\[\\]\\{\\} /\\.\\+\\-\\*\\^\\?\\$]+$"); //TODO 改成更好的正则，校验前面为单词，中间为操作符，后面为值
+		PATTERN_FUNCTION = Pattern.compile("^[A-Za-z0-9%,:_@&~!=\\<\\>\\|\\[\\]\\{\\} /\\.\\+\\-\\*\\^\\?\\s\\(\\)\\'\\$]+$"); //TODO 改成更好的正则，校验前面为单词，中间为操作符，后面为值
 
 
 		TABLE_KEY_MAP = new HashMap<String, String>();
@@ -127,6 +127,8 @@ public abstract class AbstractSQLConfig implements SQLConfig {
 		RAW_MAP = new LinkedHashMap<>();  // 保证顺序，避免配置冲突等意外情况
 
         RAW_MAP.put("cast(now() as date)","");
+        RAW_MAP.put("sum(if(userId%2=0,1,0))","");
+        RAW_MAP.put("to_days(now())-to_days(`date`)<=7","");
 
 
 	}
@@ -665,7 +667,6 @@ public abstract class AbstractSQLConfig implements SQLConfig {
 
 			keys[i] = method + "(" + StringUtil.getString(ckeys) + ")" + suffix;
 		}
-
 		//TODO 支持 OR, NOT 参考 @combine:"&key0,|key1,!key2"
 		return (hasPrefix ? " HAVING " : "") + StringUtil.concat(StringUtil.getString(keys, AND), joinHaving, AND);
 	}
@@ -1024,6 +1025,7 @@ public abstract class AbstractSQLConfig implements SQLConfig {
 					boolean distinct = i <= 0 && method.startsWith(PREFFIX_DISTINCT);
 					String fun = distinct ? method.substring(PREFFIX_DISTINCT.length()) : method;
 
+
 					if (fun.isEmpty() == false) {
 						if (Functions.SQL_FUNCTION_MAP == null || Functions.SQL_FUNCTION_MAP.isEmpty()) {
 							if (StringUtil.isName(fun) == false) {
@@ -1038,36 +1040,31 @@ public abstract class AbstractSQLConfig implements SQLConfig {
 									+ " 中 function 必须符合小写英文单词的 SQL 函数名格式！且必须是后端允许调用的 SQL 函数!");
 						}
 					}
-					HashMap<String,String>  map = new HashMap<>();
-					String datefunction = expression.substring(0,start);
-					if(map.containsKey(datefunction)){
-						keys[i].replace(datefunction,map.get(datefunction));
-					}
-					System.out.println("ahha");
 				}
 
 				boolean isColumn = start < 0;
 
+
 				String[] ckeys = StringUtil.split(isColumn ? expression : expression.substring(start + 1, end));
 				String quote = getQuote();
 
+
 				//			if (isPrepared()) { //不能通过 ? 来代替，SELECT 'id','name' 返回的就是 id:"id", name:"name"，而不是数据库里的值！
 				if (ckeys != null && ckeys.length > 0) {
-
 					boolean distinct;
 					String origin;
 					String alias;
 					int index;
 					for (int j = 0; j < ckeys.length; j++) {
 						index = isColumn ? ckeys[j].lastIndexOf(":") : -1; //StringUtil.split返回数组中，子项不会有null
-						origin = index < 0 ? ckeys[j] : ckeys[j].substring(0, index);
+						origin = index < 0 ? ckeys[j] : ckeys[j].substring(0, index); //获取 ：之前的
 						alias = index < 0 ? null : ckeys[j].substring(index + 1);
 
-						distinct = j <= 0 && origin.startsWith(PREFFIX_DISTINCT);
-						if (distinct) {
-							origin = origin.substring(PREFFIX_DISTINCT.length());
-						}
+						distinct = j <= 0 && origin.startsWith(PREFFIX_DISTINCT);// 判断是否是distinct
 
+						if (distinct) {
+							origin = origin.substring(PREFFIX_DISTINCT.length()); //获取distinct 自后的
+						}
 						if (isPrepared()) {
 							if (isColumn) {
 								if (StringUtil.isName(origin) == false || (alias != null && StringUtil.isName(alias) == false)) {
@@ -1086,21 +1083,25 @@ public abstract class AbstractSQLConfig implements SQLConfig {
 								}
 							}
 						}
-
 						//JOIN 副表不再在外层加副表名前缀 userId AS `Commet.userId`， 而是直接 userId AS `userId`
 						boolean isName = false;
-						if (StringUtil.isNumer(origin)) {
-							//do nothing
+						//f(origin.substring("'")){
+						//String param[] = origin.split("\\s+");
+
+					   String param[] = StringUtil.getParams(origin);
+						for (int k = 0; k < param.length; k++) {
+							if("".equals(RAW_MAP.get(param[k]))){
+								// do nothing
+							}else if (StringUtil.isNumer(param[k])) {
+								//do nothing
+							} else if (StringUtil.isName(param[k])) {
+								param[k] = quote + param[k] + quote;
+								if(param.length==1) isName = true;
+							} else {
+								param[k]= getValue(param[k]).toString();
+							}
 						}
-						else if (StringUtil.isName(origin)) {
-							origin = quote + origin + quote;
-							isName = true;
-						} 
-						else {
-							if(origin.startsWith("%s"))
-								origin =  getValue(origin.substring(2)).toString();
-							else origin = getValue(origin).toString();
-						}
+						origin = StringUtil.join(param," ");
 
 						if (isName && isKeyPrefix()) {
 							ckeys[j] = tableAlias + "." + origin;
@@ -1119,7 +1120,6 @@ public abstract class AbstractSQLConfig implements SQLConfig {
 						}
 					}
 					//				}
-
 				}
 
 				if (isColumn) {
@@ -1164,8 +1164,15 @@ public abstract class AbstractSQLConfig implements SQLConfig {
 					);
 		}
 	}
-
-
+    static {
+		RAW_MAP.put("datetime","");
+		RAW_MAP.put("DATETIME","");
+		RAW_MAP.put("AS","");
+		RAW_MAP.put("as","");
+		RAW_MAP.put("date","");
+		RAW_MAP.put("DATE","");
+		RAW_MAP.put("now()","");
+	}
 	@Override
 	public List<List<Object>> getValues() {
 		return values;
@@ -1844,14 +1851,21 @@ public abstract class AbstractSQLConfig implements SQLConfig {
 	private List<Object> preparedValueList = new ArrayList<>();
 	private Object getValue(@NotNull Object value) {
 		if (isPrepared()) {
+			if(value  instanceof  String){
+				String s =  value.toString();
+				if(s.startsWith("'")&&s.endsWith("'")){
+					value =   s.substring(1,s.length()-1);
+				}
+			}
 			preparedValueList.add(value);
 			return "?";
 		}
 		return getSQLValue(value);
 	}
 	public Object getSQLValue(@NotNull Object value) {
+		return  value;
 		//		return (value instanceof Number || value instanceof Boolean) && DATABASE_POSTGRESQL.equals(getDatabase()) ? value :  "'" + value + "'";
-		return (value instanceof Number || value instanceof Boolean) ? value :  "'" + value + "'"; //MySQL 隐式转换用不了索引
+	//	return (value instanceof Number || value instanceof Boolean) ? value :  "'" + value + "'"; //MySQL 隐式转换用不了索引
 	}
 
 	@Override
