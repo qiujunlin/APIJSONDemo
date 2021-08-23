@@ -31,15 +31,8 @@ import static apijson.SQL.AND;
 import static apijson.SQL.NOT;
 import static apijson.SQL.OR;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 import javax.activation.UnsupportedDataTypeException;
@@ -92,7 +85,7 @@ public abstract class AbstractSQLConfig implements SQLConfig {
 	public static final List<String> CONFIG_TABLE_LIST;
 	public static final List<String> DATABASE_LIST;
 	// 自定义原始 SQL 片段 Map<key, substring>：当 substring 为 null 时忽略；当 substring 为 "" 时整个 value 是 raw SQL；其它情况则只是 substring 这段为 raw SQL
-	public static final Map<String, String> RAW_MAP;
+
 	static {  // 凡是 SQL 边界符、分隔符、注释符 都不允许，例如 ' " ` ( ) ; # -- ，以免拼接 SQL 时被注入意外可执行指令
 		PATTERN_RANGE = Pattern.compile("^[0-9%,!=\\<\\>/\\.\\+\\-\\*\\^]+$"); // ^[a-zA-Z0-9_*%!=<>(),"]+$ 导致 exists(select*from(Comment)) 通过！
 		PATTERN_FUNCTION = Pattern.compile("^[A-Za-z0-9%,:_@&~!=\\<\\>\\|\\[\\]\\{\\} /\\.\\+\\-\\*\\^\\?\\s\\(\\)\\'\\$]+$"); //TODO 改成更好的正则，校验前面为单词，中间为操作符，后面为值
@@ -124,11 +117,7 @@ public abstract class AbstractSQLConfig implements SQLConfig {
 		DATABASE_LIST.add(DATABASE_DB2);
 
 
-		RAW_MAP = new LinkedHashMap<>();  // 保证顺序，避免配置冲突等意外情况
 
-        RAW_MAP.put("cast(now() as date)","");
-        RAW_MAP.put("sum(if(userId%2=0,1,0))","");
-        RAW_MAP.put("to_days(now())-to_days(`date`)<=7","");
 
 
 	}
@@ -810,7 +799,7 @@ public abstract class AbstractSQLConfig implements SQLConfig {
 					+ "对应的 " + key + ":value 中 value 类型只能为 String！");
 		}
 
-		String rawSQL = containRaw ? RAW_MAP.get(value) : null;
+		String rawSQL = containRaw ? Functions.RAW_MAP.get(value) : null;
 		if (containRaw) {
 			if (rawSQL == null) {
 				throw new UnsupportedOperationException("@raw:value 的 value 中 " + key + " 不合法！"
@@ -879,7 +868,7 @@ public abstract class AbstractSQLConfig implements SQLConfig {
 				for (String c : column) {
 					if (containRaw) {
 						// 由于 HashMap 对 key 做了 hash 处理，所以 get 比 containsValue 更快
-						if ("".equals(RAW_MAP.get(c)) || RAW_MAP.containsValue(c)) {  // newSQLConfig 提前处理好的
+						if ("".equals(Functions.RAW_MAP.get(c)) || Functions.RAW_MAP.containsValue(c)) {  // newSQLConfig 提前处理好的
 							//排除@raw中的值，以避免使用date_format(date,'%Y-%m-%d %H:%i:%s') 时,冒号的解析出错
 							//column.remove(c);
 							continue;
@@ -990,170 +979,170 @@ public abstract class AbstractSQLConfig implements SQLConfig {
 				//fun(arg0,arg1,...)
 				expression = keys[i];
 
-				if (containRaw) {  // 由于 HashMap 对 key 做了 hash 处理，所以 get 比 containsValue 更快
-					if ("".equals(RAW_MAP.get(expression)) || RAW_MAP.containsValue(expression)) {  // newSQLConfig 提前处理好的
-						continue;
-					}
-
-					// 简单点， 后台配置就带上 AS
-					//					int index = expression.lastIndexOf(":");
-					//					String alias = expression.substring(index+1);
-					//					boolean hasAlias = StringUtil.isName(alias);
-					//					String pre = index > 0 && hasAlias ? expression.substring(0, index) : expression;
-					//					if (RAW_MAP.containsValue(pre) || "".equals(RAW_MAP.get(pre))) {  // newSQLConfig 提前处理好的
-					//						expression = pre + (hasAlias ? " AS " + alias : "");
-					//						continue;
-					//					}
-				}
-
-				if (expression.length() > 50) {
-					throw new UnsupportedOperationException("@column:value 的 value 中字符串 " + expression + " 不合法！"
-							+ "不允许传超过 50 个字符的函数或表达式！请用 @raw 简化传参！");
-				}
-
-
-				int start = expression.indexOf("(");
-				int end = 0;
-				if (start >= 0) {
-					end = expression.lastIndexOf(")");
-					if (start >= end) {
-						throw new IllegalArgumentException("字符 " + expression + " 不合法！"
-								+ "@column:value 中 value 里的 SQL函数必须为 function(arg0,arg1,...) 这种格式！");
-					}
-
-					method = expression.substring(0, start);
-					boolean distinct = i <= 0 && method.startsWith(PREFFIX_DISTINCT);
-					String fun = distinct ? method.substring(PREFFIX_DISTINCT.length()) : method;
-
-
-					if (fun.isEmpty() == false) {
-						if (Functions.SQL_FUNCTION_MAP == null || Functions.SQL_FUNCTION_MAP.isEmpty()) {
-							if (StringUtil.isName(fun) == false) {
-								throw new IllegalArgumentException("字符 " + method + " 不合法！"
-										+ "预编译模式下 @column:\"column0,column1:alias;function0(arg0,arg1,...);function1(...):alias...\""
-										+ " 中 function 必须符合小写英文单词的 SQL 函数名格式！");
-							}
-						}
-						else if (Functions.SQL_FUNCTION_MAP.containsKey(fun) == false) {
-							throw new IllegalArgumentException("字符 " + method + " 不合法！"
-									+ "预编译模式下 @column:\"column0,column1:alias;function0(arg0,arg1,...);function1(...):alias...\""
-									+ " 中 function 必须符合小写英文单词的 SQL 函数名格式！且必须是后端允许调用的 SQL 函数!");
-						}
-					}
-				}
-
-				boolean isColumn = start < 0;
-
-
-				String[] ckeys = StringUtil.split(isColumn ? expression : expression.substring(start + 1, end));
-				String quote = getQuote();
-
-
-				//			if (isPrepared()) { //不能通过 ? 来代替，SELECT 'id','name' 返回的就是 id:"id", name:"name"，而不是数据库里的值！
-				if (ckeys != null && ckeys.length > 0) {
-					boolean distinct;
-					String origin;
-					String alias;
-					int index;
-					for (int j = 0; j < ckeys.length; j++) {
-						index = isColumn ? ckeys[j].lastIndexOf(":") : -1; //StringUtil.split返回数组中，子项不会有null
-						origin = index < 0 ? ckeys[j] : ckeys[j].substring(0, index); //获取 ：之前的
-						alias = index < 0 ? null : ckeys[j].substring(index + 1);
-
-						distinct = j <= 0 && origin.startsWith(PREFFIX_DISTINCT);// 判断是否是distinct
-
-						if (distinct) {
-							origin = origin.substring(PREFFIX_DISTINCT.length()); //获取distinct 自后的
-						}
-						if (isPrepared()) {
-							if (isColumn) {
-								if (StringUtil.isName(origin) == false || (alias != null && StringUtil.isName(alias) == false)) {
-									throw new IllegalArgumentException("字符 " + ckeys[j] + " 不合法！"
-											+ "预编译模式下 @column:value 中 value里面用 , 分割的每一项"
-											+ " column:alias 中 column 必须是1个单词！如果有alias，则alias也必须为1个单词！"
-											+ "DISTINCT 必须全大写，且后面必须有且只有 1 个空格！其它情况不允许空格！");
-								}
-							}
-							else {
-								//								if ((StringUtil.isName(origin) == false || origin.startsWith("_"))) {
-								if (origin.startsWith("_") || origin.contains("--") || PATTERN_FUNCTION.matcher(origin).matches() == false) {
-									throw new IllegalArgumentException("字符 " + ckeys[j] + " 不合法！"
-											+ "预编译模式下 @column:\"column0,column1:alias;function0(arg0,arg1,...);function1(...):alias...\""
-											+ " 中所有 arg 都必须是1个不以 _ 开头的单词 或者符合正则表达式 " + PATTERN_FUNCTION + " 且不包含连续减号 -- ！DISTINCT 必须全大写，且后面必须有且只有 1 个空格！其它情况不允许空格！");
-								}
-							}
-						}
-						//JOIN 副表不再在外层加副表名前缀 userId AS `Commet.userId`， 而是直接 userId AS `userId`
-						boolean isName = false;
-						//f(origin.substring("'")){
-						//String param[] = origin.split("\\s+");
-
-					   String param[] = StringUtil.getParams(origin);
-						for (int k = 0; k < param.length; k++) {
-							if("".equals(RAW_MAP.get(param[k]))){
-								// do nothing
-							}else if (StringUtil.isNumer(param[k])) {
-								//do nothing
-							} else if (StringUtil.isName(param[k])) {
-								param[k] = quote + param[k] + quote;
-								if(param.length==1) isName = true;
-							} else {
-								param[k]= getValue(param[k]).toString();
-							}
-						}
-						origin = StringUtil.join(param," ");
-
-						if (isName && isKeyPrefix()) {
-							ckeys[j] = tableAlias + "." + origin;
-							//							if (isColumn) {
-							//								ckeys[j] += " AS " + quote + (isMain() ? "" : tableAlias + ".") + (StringUtil.isEmpty(alias, true) ? origin : alias) + quote;
-							//							}
-							if (isColumn && StringUtil.isEmpty(alias, true) == false) {
-								ckeys[j] += " AS " + quote + alias + quote;
-							}
-						} else {
-							ckeys[j] = origin + (StringUtil.isEmpty(alias, true) ? "" : " AS " + quote + alias + quote);
-						}
-
-						if (distinct) {
-							ckeys[j] = PREFFIX_DISTINCT + ckeys[j];
-						}
-					}
-					//				}
-				}
-
-				if (isColumn) {
-					keys[i] = StringUtil.getString(ckeys);
-				}
-				else {
-					String suffix = expression.substring(end + 1, expression.length()); //:contactCount
-					int index = suffix.lastIndexOf(":");
-					String alias = index < 0 ? "" : suffix.substring(index + 1); //contactCount
-					suffix = index < 0 ? suffix : suffix.substring(0, index);
-
-					if (alias.isEmpty() == false && StringUtil.isName(alias) == false) {
-						throw new IllegalArgumentException("字符串 " + alias + " 不合法！"
-								+ "预编译模式下 @column:value 中 value里面用 ; 分割的每一项"
-								+ " function(arg0,arg1,...):alias 中 alias 必须是1个单词！并且不要有多余的空格！");
-					}
-
-					if (suffix.isEmpty() == false && (((String) suffix).contains("--") || ((String) suffix).contains("/*") || PATTERN_RANGE.matcher((String) suffix).matches() == false)) {
-						throw new UnsupportedOperationException("字符串 " + suffix + " 不合法！"
-								+ "预编译模式下 @column:\"column?value;function(arg0,arg1,...)?value...\""
-								+ " 中 ?value 必须符合正则表达式 " + PATTERN_RANGE + " 且不包含连续减号 -- 或注释符 /* ！不允许多余的空格！");
-					}
-
-					String origin = method + "(" + StringUtil.getString(ckeys) + ")" + suffix;
-					//					if (isKeyPrefix()) {
-					//						keys[i] = origin + " AS " + quote + (isMain() ? "" : tableAlias + ".") + (StringUtil.isEmpty(alias, true) ? method : alias) + quote;
-					//					}
-					//					else {
-					keys[i] = origin + (StringUtil.isEmpty(alias, true) ? "" : " AS " + quote + alias + quote);
-					//					}
-				}
-
+//				if (containRaw) {  // 由于 HashMap 对 key 做了 hash 处理，所以 get 比 containsValue 更快
+//					if ("".equals(RAW_MAP.get(expression)) || RAW_MAP.containsValue(expression)) {  // newSQLConfig 提前处理好的
+//						continue;
+//					}
+//
+//					// 简单点， 后台配置就带上 AS
+//					//					int index = expression.lastIndexOf(":");
+//					//					String alias = expression.substring(index+1);
+//					//					boolean hasAlias = StringUtil.isName(alias);
+//					//					String pre = index > 0 && hasAlias ? expression.substring(0, index) : expression;
+//					//					if (RAW_MAP.containsValue(pre) || "".equals(RAW_MAP.get(pre))) {  // newSQLConfig 提前处理好的
+//					//						expression = pre + (hasAlias ? " AS " + alias : "");
+//					//						continue;
+//					//					}
+//				}
+//
+//				if (expression.length() > 50) {
+//					throw new UnsupportedOperationException("@column:value 的 value 中字符串 " + expression + " 不合法！"
+//							+ "不允许传超过 50 个字符的函数或表达式！请用 @raw 简化传参！");
+//				}
+//
+//
+//				int start = expression.indexOf("(");
+//				int end = 0;
+//				if (start >= 0) {
+//					end = expression.lastIndexOf(")");
+//					if (start >= end) {
+//						throw new IllegalArgumentException("字符 " + expression + " 不合法！"
+//								+ "@column:value 中 value 里的 SQL函数必须为 function(arg0,arg1,...) 这种格式！");
+//					}
+//
+//					method = expression.substring(0, start);
+//					boolean distinct = i <= 0 && method.startsWith(PREFFIX_DISTINCT);
+//					String fun = distinct ? method.substring(PREFFIX_DISTINCT.length()) : method;
+//
+//
+//					if (fun.isEmpty() == false) {
+//						if (Functions.SQL_FUNCTION_MAP == null || Functions.SQL_FUNCTION_MAP.isEmpty()) {
+//							if (StringUtil.isName(fun) == false) {
+//								throw new IllegalArgumentException("字符 " + method + " 不合法！"
+//										+ "预编译模式下 @column:\"column0,column1:alias;function0(arg0,arg1,...);function1(...):alias...\""
+//										+ " 中 function 必须符合小写英文单词的 SQL 函数名格式！");
+//							}
+//						}
+//						else if (Functions.SQL_FUNCTION_MAP.containsKey(fun) == false) {
+//							throw new IllegalArgumentException("字符 " + method + " 不合法！"
+//									+ "预编译模式下 @column:\"column0,column1:alias;function0(arg0,arg1,...);function1(...):alias...\""
+//									+ " 中 function 必须符合小写英文单词的 SQL 函数名格式！且必须是后端允许调用的 SQL 函数!");
+//						}
+//					}
+//				}
+//
+//				boolean isColumn = start < 0;
+//
+//
+//				String[] ckeys = StringUtil.split(isColumn ? expression : expression.substring(start + 1, end));
+//				String quote = getQuote();
+//
+//
+//				//			if (isPrepared()) { //不能通过 ? 来代替，SELECT 'id','name' 返回的就是 id:"id", name:"name"，而不是数据库里的值！
+//				if (ckeys != null && ckeys.length > 0) {
+//					boolean distinct;
+//					String origin;
+//					String alias;
+//					int index;
+//					for (int j = 0; j < ckeys.length; j++) {
+//						index = isColumn ? ckeys[j].lastIndexOf(":") : -1; //StringUtil.split返回数组中，子项不会有null
+//						origin = index < 0 ? ckeys[j] : ckeys[j].substring(0, index); //获取 ：之前的
+//						alias = index < 0 ? null : ckeys[j].substring(index + 1);
+//
+//						distinct = j <= 0 && origin.startsWith(PREFFIX_DISTINCT);// 判断是否是distinct
+//
+//						if (distinct) {
+//							origin = origin.substring(PREFFIX_DISTINCT.length()); //获取distinct 自后的
+//						}
+//						if (isPrepared()) {
+//							if (isColumn) {
+//								if (StringUtil.isName(origin) == false || (alias != null && StringUtil.isName(alias) == false)) {
+//									throw new IllegalArgumentException("字符 " + ckeys[j] + " 不合法！"
+//											+ "预编译模式下 @column:value 中 value里面用 , 分割的每一项"
+//											+ " column:alias 中 column 必须是1个单词！如果有alias，则alias也必须为1个单词！"
+//											+ "DISTINCT 必须全大写，且后面必须有且只有 1 个空格！其它情况不允许空格！");
+//								}
+//							}
+//							else {
+//								//								if ((StringUtil.isName(origin) == false || origin.startsWith("_"))) {
+//								if (origin.startsWith("_") || origin.contains("--") || PATTERN_FUNCTION.matcher(origin).matches() == false) {
+//									throw new IllegalArgumentException("字符 " + ckeys[j] + " 不合法！"
+//											+ "预编译模式下 @column:\"column0,column1:alias;function0(arg0,arg1,...);function1(...):alias...\""
+//											+ " 中所有 arg 都必须是1个不以 _ 开头的单词 或者符合正则表达式 " + PATTERN_FUNCTION + " 且不包含连续减号 -- ！DISTINCT 必须全大写，且后面必须有且只有 1 个空格！其它情况不允许空格！");
+//								}
+//							}
+//						}
+//						//JOIN 副表不再在外层加副表名前缀 userId AS `Commet.userId`， 而是直接 userId AS `userId`
+//						boolean isName = false;
+//						//f(origin.substring("'")){
+//						//String param[] = origin.split("\\s+");
+//
+//					   String param[] = StringUtil.getParams(origin);
+//						for (int k = 0; k < param.length; k++) {
+//							if("".equals(RAW_MAP.get(param[k]))){
+//								// do nothing
+//							}else if (StringUtil.isNumer(param[k])) {
+//								//do nothing
+//							} else if (StringUtil.isName(param[k])) {
+//								param[k] = quote + param[k] + quote;
+//								if(param.length==1) isName = true;
+//							} else {
+//								param[k]= getValue(param[k]).toString();
+//							}
+//						}
+//						origin = StringUtil.join(param," ");
+//
+//						if (isName && isKeyPrefix()) {
+//							ckeys[j] = tableAlias + "." + origin;
+//							//							if (isColumn) {
+//							//								ckeys[j] += " AS " + quote + (isMain() ? "" : tableAlias + ".") + (StringUtil.isEmpty(alias, true) ? origin : alias) + quote;
+//							//							}
+//							if (isColumn && StringUtil.isEmpty(alias, true) == false) {
+//								ckeys[j] += " AS " + quote + alias + quote;
+//							}
+//						} else {
+//							ckeys[j] = origin + (StringUtil.isEmpty(alias, true) ? "" : " AS " + quote + alias + quote);
+//						}
+//
+//						if (distinct) {
+//							ckeys[j] = PREFFIX_DISTINCT + ckeys[j];
+//						}
+//					}
+//					//				}
+//				}
+//
+//				if (isColumn) {
+//					keys[i] = StringUtil.getString(ckeys);
+//				}
+//				else {
+//					String suffix = expression.substring(end + 1, expression.length()); //:contactCount
+//					int index = suffix.lastIndexOf(":");
+//					String alias = index < 0 ? "" : suffix.substring(index + 1); //contactCount
+//					suffix = index < 0 ? suffix : suffix.substring(0, index);
+//
+//					if (alias.isEmpty() == false && StringUtil.isName(alias) == false) {
+//						throw new IllegalArgumentException("字符串 " + alias + " 不合法！"
+//								+ "预编译模式下 @column:value 中 value里面用 ; 分割的每一项"
+//								+ " function(arg0,arg1,...):alias 中 alias 必须是1个单词！并且不要有多余的空格！");
+//					}
+//
+//					if (suffix.isEmpty() == false && (((String) suffix).contains("--") || ((String) suffix).contains("/*") || PATTERN_RANGE.matcher((String) suffix).matches() == false)) {
+//						throw new UnsupportedOperationException("字符串 " + suffix + " 不合法！"
+//								+ "预编译模式下 @column:\"column?value;function(arg0,arg1,...)?value...\""
+//								+ " 中 ?value 必须符合正则表达式 " + PATTERN_RANGE + " 且不包含连续减号 -- 或注释符 /* ！不允许多余的空格！");
+//					}
+//
+//					String origin = method + "(" + StringUtil.getString(ckeys) + ")" + suffix;
+//					//					if (isKeyPrefix()) {
+//					//						keys[i] = origin + " AS " + quote + (isMain() ? "" : tableAlias + ".") + (StringUtil.isEmpty(alias, true) ? method : alias) + quote;
+//					//					}
+//					//					else {
+//					keys[i] = origin + (StringUtil.isEmpty(alias, true) ? "" : " AS " + quote + alias + quote);
+//					//					}
+//				}
+//
+               keys[i] = get(keys[i],0);
 			}
-
 			String c = StringUtil.getString(keys);
 			c = c + (StringUtil.isEmpty(joinColumn, true) ? "" : ", " + joinColumn);//不能在这里改，后续还要用到:
 			return isMain() && isDistinct() ? PREFFIX_DISTINCT + c : c;
@@ -1164,15 +1153,184 @@ public abstract class AbstractSQLConfig implements SQLConfig {
 					);
 		}
 	}
-    static {
-		RAW_MAP.put("datetime","");
-		RAW_MAP.put("DATETIME","");
-		RAW_MAP.put("AS","");
-		RAW_MAP.put("as","");
-		RAW_MAP.put("date","");
-		RAW_MAP.put("DATE","");
-		RAW_MAP.put("now()","");
+	public String get(String s, int depth) throws Exception {
+		// raw
+		if ("".equals(Functions.RAW_MAP.get(s))) return s;
+		Stack<String> stack = new Stack<>();
+		int len = s.length();
+		StringBuilder res = new StringBuilder();
+		int i = 0;
+		while (i < s.length()) {
+			char c = s.charAt(i);
+			//一段一段解析  是遇见非 ' ' ,几种情况： 1、字段 2. 字符串  3. 是函数  。情况1 ，2 直接截取，情况3 ，判断最外层函数的括号位置，递归的解析括号内部的函数。
+			if (c != ' ') {
+				//是冒号
+				if (c == ',') {
+					res.append(',');
+					i++;
+				} else {
+					//是字符
+					StringBuilder stringBuilder = new StringBuilder();
+					int j = i;
+					//是字符串开始
+					if (c == '\'') {
+						j = i + 1;
+						while (j < len && s.charAt(j) != '\'') {
+							stringBuilder.append(s.charAt(j));
+							j++;
+						}
+						res.append(s.substring(i, j + 1));
+						i = j + 1;
+					} else {
+						//不是字符串开始
+						//不是 1：函数 2:字段
+						//思路一
+						int endfun = -1;
+						int right = 0;
+						//  moment : m ,comment : c
+						while (j < len && s.charAt(j) != ' ' && s.charAt(j) != ',' && s.charAt(j) != ':') {
+							//是函数
+							if (s.charAt(j) == '(') {
+								String fun = stringBuilder.toString();
+								//判断fun
+								if (fun.isEmpty() == false) {
+									if (Functions.SQL_FUNCTION_MAP == null || Functions.SQL_FUNCTION_MAP.isEmpty()) {
+										if (StringUtil.isName(fun) == false) {
+											throw new IllegalArgumentException("字符 " + fun + " 不合法！"
+													+ "预编译模式下 @column:\"column0,column1:alias;function0(arg0,arg1,...);function1(...):alias...\""
+													+ " 中 function 必须符合小写英文单词的 SQL 函数名格式！");
+										}
+									} else if (Functions.SQL_FUNCTION_MAP.containsKey(fun) == false) {
+										throw new IllegalArgumentException("字符 " + fun + " 不合法！"
+												+ "预编译模式下 @column:\"column0,column1:alias;function0(arg0,arg1,...);function1(...):alias...\""
+												+ " 中 function 必须符合小写英文单词的 SQL 函数名格式！且必须是后端允许调用的 SQL 函数!");
+									}
+								}
+								// 思路1 寻找结尾 空格 （错误）
+								//思路2 根据括号寻找
+								right = getnext(j + 1, s);
+								if (right == -1) {
+									throw new RuntimeException("函数括号不匹配");
+								} else {
+
+									stringBuilder.append("(");
+									// 递归调用
+									stringBuilder.append(get(s.substring(j + 1, right), depth + 1));
+									stringBuilder.append(")");
+									endfun = 1;
+								}
+								break;
+							} else {
+								stringBuilder.append(s.charAt(j));
+								j++;
+							}
+						}
+						// j ： 循环结束的下标 可能是（结尾/遇见空格/遇见”：“）  right： 函数结束的下标
+						if (j == len) endfun = 4;
+						else if (s.charAt(j) == ' ') {
+							endfun = 3;
+						} else if (s.charAt(j) == ',') {
+							endfun = 2;
+						}
+						//  1 ，解析函数结束 2.遇见“，结束  3. 遇见空格结束 4. 到了结尾结束. -1: 字段遇见”：“结束
+						if (endfun == 1) {
+							if ((right + 1) < len && s.charAt(right + 1) == ':') {
+								// 获取别名的结束下标 可能是s的结尾或者是遇见空格冒号
+								int k = StringUtil.getAlians(right + 1, s);
+								// 获取别名 并加上 "`"
+								String alians = StringUtil.getQuoteColumn(s.substring(right + 2, k), "`");
+								res.append(stringBuilder.append(" AS ").append(alians));
+								i = k;
+							} else {
+								res.append(stringBuilder);
+								i = right + 1;
+							}
+						} else if (endfun == 2 || endfun == 3) {
+							//字段在 rawmap中
+							if ("".equals(Functions.RAW_MAP.get(stringBuilder.toString()))) {
+								res.append(stringBuilder.toString());
+								i = j;
+							} else {
+								// 判断是否是数字
+								if (StringUtil.isNumer(stringBuilder.toString())) {
+									res.append(stringBuilder.toString());
+								} else {
+									res.append(StringUtil.getQuoteColumn(stringBuilder.toString(), "`"));
+								}
+								i = j;
+//                                 if (s.charAt(j) == ':') {
+//                                     int k = StringUtil.getAlians(j + 1, s);
+//                                     String alians = StringUtil.getQuoteColumn(s.substring(j + 1, k), "`");
+//                                     res.append(stringBuilder.append(" AS ").append(alians));
+//                                     i = k;
+//                                 } else {
+
+							}
+							//}
+						} else if (endfun == 4) {
+							if ("".equals(Functions.RAW_MAP.get(stringBuilder.toString()))) {
+								res.append(stringBuilder.toString());
+							}else{
+								//如果是数字
+								if (StringUtil.isNumer(stringBuilder.toString())) {
+									res.append(stringBuilder);
+								} else {
+									stringBuilder.insert(0, "`");
+									stringBuilder.append("`");
+									res.append(stringBuilder);
+								}
+							}
+							i = j;
+						} else if (endfun == -1) {
+
+							if (s.charAt(j) == ':') {
+								int k = StringUtil.getAlians(j + 1, s);
+								String alians = StringUtil.getQuoteColumn(s.substring(j + 1, k), "`");
+								stringBuilder.insert(0, "`");
+								stringBuilder.append("`");
+								res.append(stringBuilder.append(" AS ").append(alians));
+								i = k;
+							} else {
+								stringBuilder.insert(0, "`");
+								stringBuilder.append("`");
+								res.append(stringBuilder);
+								i = j;
+							}
+						}
+					}
+				}
+			} else {
+				int j = i;
+				while (j < len && s.charAt(j) == ' ') j++;
+				//空格浓缩
+				if (j < len) res.append(' ');
+				i = j;
+			}
+		}
+		return res.toString();
 	}
+
+	private int getnext(int j, String s) {
+		Stack<Integer> stack = new Stack<>();
+		int index = j;
+		boolean isString = false;
+		while (index < s.length()) {
+			if (s.charAt(index) == '\'') {
+				isString = !isString;
+			} else if (s.charAt(index) == '(' && !isString) {
+				stack.push(index);
+			} else if (s.charAt(index) == ')' && !isString) {
+				if (!stack.isEmpty() && s.charAt(stack.peek()) == '(') {
+					stack.pop();
+				} else {
+					return index;
+				}
+			}
+			index++;
+		}
+		return -1;
+	}
+
 	@Override
 	public List<List<Object>> getValues() {
 		return values;

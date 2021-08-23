@@ -296,6 +296,8 @@ public class StringUtil {
 
 
 	//判断字符类型 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+	public  static  final  Pattern PATTERN_INTEGER;
+	public  static  final  Pattern PATTERN_FLOAT;
 
 	public static final Pattern PATTERN_NUMBER;
 	public static final Pattern PATTERN_PHONE;
@@ -307,6 +309,8 @@ public class StringUtil {
 	public static final Pattern PATTERN_ALPHA_BIG;
 	public static final Pattern PATTERN_ALPHA_SMALL;
 	static {
+		PATTERN_INTEGER = Pattern.compile("^-?\\d+$");
+		PATTERN_FLOAT = Pattern.compile("^(-?\\d+)(\\.\\d+)?$");
 		PATTERN_NUMBER = Pattern.compile("^[0-9]+$");
 		PATTERN_ALPHA = Pattern.compile("^[a-zA-Z]+$");
 		PATTERN_ALPHA_BIG = Pattern.compile("^[A-Z]+$");
@@ -376,7 +380,7 @@ public class StringUtil {
 		}
 
 		currentString = s;
-		return PATTERN_NUMBER.matcher(s).matches();
+		return PATTERN_INTEGER.matcher(s).matches()||PATTERN_FLOAT.matcher(s).matches();
 	}
 	/**判断是否全是字母
 	 * @param s
@@ -928,6 +932,17 @@ public class StringUtil {
 		return arrayList.toArray(new String[arrayList.size()]);
 
 
+	}
+	public static String getQuoteColumn(String origin, String s) {
+		return  s+origin+s;
+	}
+
+	public static int getAlians(int j, String s) {
+		int  k  =  j+1;
+		while (k<s.length()&&Character.isLetter(s.charAt(k))){
+			k++;
+		}
+		return  k;
 	}
 
 	//校正（自动补全等）字符串>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
