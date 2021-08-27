@@ -853,9 +853,6 @@ public abstract class AbstractSQLExecutor implements SQLExecutor {
 				config.setId(rs.getLong(1));//返回插入的主键id
 			}
 		}
-
 		return count;
 	}
-
-
 }
