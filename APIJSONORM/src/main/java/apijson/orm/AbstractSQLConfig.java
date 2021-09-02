@@ -992,7 +992,7 @@ public abstract class AbstractSQLConfig implements SQLConfig {
 							+ "不允许传超过 50 个字符的函数或表达式！请用 @raw 简化传参！");
 				}
 				// 原来的步骤迁移到了 下面这个方法中
-                keys[i] = getColumnPrase(expression);
+				keys[i] = getColumnPrase(expression);
 //
 //				int start = expression.indexOf("(");
 //				int end = 0;
@@ -3222,7 +3222,7 @@ public abstract class AbstractSQLConfig implements SQLConfig {
 
 			boolean distinct = column == null || rawColumnSQL != null ? false : column.startsWith(PREFFIX_DISTINCT);
 			if (rawColumnSQL == null) {
-				String[] fks = StringUtil.split(distinct ? column.substring(PREFFIX_DISTINCT.length()) : column, ";"); // key0,key1;fun0(key0,...);fun1(key0,...);key3;fun2(key0,...)
+				String[] fks = StringUtil.split(column, ";"); // key0,key1;fun0(key0,...);fun1(key0,...);key3;fun2(key0,...)
 				if (fks != null) {
 					String[] ks;
 					for (String fk : fks) {
