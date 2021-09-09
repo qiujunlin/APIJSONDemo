@@ -2699,9 +2699,15 @@ public abstract class AbstractSQLConfig implements SQLConfig {
             case POST:
                 return "INSERT INTO " + tablePath + config.getColumnString() + " VALUES" + config.getValuesString();
             case PUT:
-                return "UPDATE " + tablePath + config.getSetString() + config.getWhereString(true) + (config.isMySQL() || config.isClickHouse() ? config.getLimitString() : "");
+                if(config.isClickHouse()){
+                    return  "ALTER TABLE " +  tablePath + " UPDATE" + config.getWhereString(true);
+                }
+                return "UPDATE " + tablePath + config.getSetString() + config.getWhereString(true) + (config.isMySQL() ? config.getLimitString() : "");
             case DELETE:
-                return "DELETE FROM " + tablePath + config.getWhereString(true) + (config.isMySQL() || config.isClickHouse() ? config.getLimitString() : "");  // PostgreSQL 不允许 LIMIT
+                if(config.isClickHouse()){
+                   return  "ALTER TABLE " +  tablePath + " DELETE" + config.getWhereString(true);
+                }
+                return "DELETE FROM " + tablePath + config.getWhereString(true) + (config.isMySQL() ? config.getLimitString() : "");  // PostgreSQL 不允许 LIMIT
             default:
                 String explain = (config.isExplain() ? (config.isSQLServer() || config.isOracle() ? "SET STATISTICS PROFILE ON  " : "EXPLAIN ") : "");
                 if (config.isTest() && RequestMethod.isGetMethod(config.getMethod(), true)) {

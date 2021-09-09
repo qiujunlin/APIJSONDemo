@@ -41,7 +41,53 @@ public class DemoController extends APIJSONController {
 	public Parser<Long> newParser(HttpSession session, RequestMethod method) {
 		return super.newParser(session, method).setNeedVerify(false); //TODO 这里关闭校验，方便新手快速测试，实际线上项目建议开启
 	}
-	
+	/**计数
+	 * @param request 只用String，避免encode后未decode
+	 * @param session
+	 * @return
+	 * @see {@link RequestMethod#HEAD}
+	 */
+	@PostMapping("head")
+	@Override
+	public String head(@RequestBody String request, HttpSession session) {
+		return super.head(request, session);
+	}
+
+	/**限制性GET，request和response都非明文，浏览器看不到，用于对安全性要求高的GET请求
+	 * @param request 只用String，避免encode后未decode
+	 * @param session
+	 * @return
+	 * @see {@link RequestMethod#GETS}
+	 */
+	@PostMapping("gets")
+	@Override
+	public String gets(@RequestBody String request, HttpSession session) {
+		return super.gets(request, session);
+	}
+
+	/**限制性HEAD，request和response都非明文，浏览器看不到，用于对安全性要求高的HEAD请求
+	 * @param request 只用String，避免encode后未decode
+	 * @param session
+	 * @return
+	 * @see {@link RequestMethod#HEADS}
+	 */
+	@PostMapping("heads")
+	@Override
+	public String heads(@RequestBody String request, HttpSession session) {
+		return super.heads(request, session);
+	}
+	/**修改
+	 * @param request 只用String，避免encode后未decode
+	 * @param session
+	 * @return
+	 * @see {@link RequestMethod#PUT}
+	 */
+	@PostMapping("put")
+	@Override
+	public String put(@RequestBody String request, HttpSession session) {
+		return super.put(request, session);
+	}
+
 	@PostMapping(value = "get")
 	@Override
 	public String get(@RequestBody String request, HttpSession session) {

@@ -518,7 +518,7 @@ public class FunctionsAndRaws {
         SQL_FUNCTION_MAP.put("version", ""); //以字符串形式返回服务器版本。
         SQL_FUNCTION_MAP.put("uptime", "");//以秒为单位返回服务器的正常运行时间。
 
-        //clickhouse 数学函数
+        //
         SQL_FUNCTION_MAP.put("least", ""); //返回a和b中最小的值。
         SQL_FUNCTION_MAP.put("greatest", ""); //返回a和b的最大值。
         SQL_FUNCTION_MAP.put("plus", "");  //plus(a, b), a + b operator¶计算数值的总和。
