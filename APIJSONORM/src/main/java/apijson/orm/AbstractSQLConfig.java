@@ -2615,7 +2615,7 @@ public abstract class AbstractSQLConfig implements SQLConfig {
         if (setString.isEmpty()) {
             throw new IllegalArgumentException("PUT 请求必须在Table内设置要修改的 key:value ！");
         }
-        return " SET " + setString;
+        return (isClickHouse()?"":" SET ") + setString;
     }
 
     /**
@@ -2700,7 +2700,7 @@ public abstract class AbstractSQLConfig implements SQLConfig {
                 return "INSERT INTO " + tablePath + config.getColumnString() + " VALUES" + config.getValuesString();
             case PUT:
                 if(config.isClickHouse()){
-                    return  "ALTER TABLE " +  tablePath + " UPDATE" + config.getWhereString(true);
+                    return  "ALTER TABLE " +  tablePath + " UPDATE"+ config.getSetString()+ config.getWhereString(true);
                 }
                 return "UPDATE " + tablePath + config.getSetString() + config.getWhereString(true) + (config.isMySQL() ? config.getLimitString() : "");
             case DELETE:
