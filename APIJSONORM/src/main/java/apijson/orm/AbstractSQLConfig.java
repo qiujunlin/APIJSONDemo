@@ -2615,7 +2615,7 @@ public abstract class AbstractSQLConfig implements SQLConfig {
         if (setString.isEmpty()) {
             throw new IllegalArgumentException("PUT 请求必须在Table内设置要修改的 key:value ！");
         }
-        return (isClickHouse()?"":" SET ") + setString;
+        return (isClickHouse()?" ":" SET ") + setString;
     }
 
     /**
@@ -2714,7 +2714,6 @@ public abstract class AbstractSQLConfig implements SQLConfig {
                     String q = config.getQuote();  // 生成 SELECT  (  (24 >=0 AND 24 <3)  )  AS `code` LIMIT 1 OFFSET 0
                     return explain + "SELECT " + config.getWhereString(false) + " AS " + q + JSONResponse.KEY_CODE + q + config.getLimitString();
                 }
-
                 config.setPreparedValueList(new ArrayList<Object>());
                 String column = config.getColumnString();
                 if (config.isOracle()) {
